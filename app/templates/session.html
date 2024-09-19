@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Ouvrez une session</h1>
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.utilisateur.label }}<br>
+            {{ form.utilisateur(size=32) }}
+            {% for erreur in form.utilisateur.errors %}
+            <span style="color: red;">[{{ erreur }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.mot_passe.label }}<br>
+            {{ form.mot_passe(size=32) }}
+            {% for erreur in form.mot_passe.errors %}
+            <span style="color: red;">[{{ erreur }}]</span>
+            {% endfor %}
+        </p>
+        <p>{{ form.memoriser() }} {{ form.memoriser.label }}</p>
+        <p>{{ form.soumettre() }}</p>
+    </form>
+{% endblock %}

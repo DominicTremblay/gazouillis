@@ -1,15 +1,30 @@
-<!doctype html>
 <html>
-    <head>
-      {% if title %}
-      <title>{{ title }} - Microblog</title>
-      {% else %}
-      <title>Welcome to Microblog</title>
-      {% endif %}
-    </head>
-    <body>
-        <div>Gazouillis: <a href="/index">Accueil</a></div>
-        <hr>
-        {% block content %}{% endblock %}
-    </body>
+
+<head>
+  {% if titre %}
+  <title>{{ titre }} - gazouillis</title>
+  {% else %}
+  <title>gazouillis</title>
+  {% endif %}
+</head>
+
+<body>
+  <div>
+    gazouillis:
+    <a href="{{ url_for('index') }}">Accueil</a>
+    <a href="{{ url_for('ouvrir_session') }}">Ouvrir session</a>
+  </div>
+  <hr>
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+  <ul>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</body>
+
 </html>
