@@ -2,6 +2,8 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from wtforms.validators import DataRequired
+from wtforms import TextAreaField
+from wtforms.validators import Length
 import sqlalchemy as sa
 from app import db
 import email_validator
@@ -36,3 +38,8 @@ class FormulaireInscription(FlaskForm):
         if utilisateur is not None:
             raise ValidationError(
                 'Veuillez utiliser une autre adresse courriel')
+
+class EditProfileForm(FlaskForm):
+    nom = StringField("Nom d'utilisateur", validators=[DataRequired()])
+    apropos = TextAreaField('A Propos', validators=[Length(min=0, max=140)])
+    submit = SubmitField('Soumettre')

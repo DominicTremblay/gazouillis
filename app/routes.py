@@ -4,8 +4,16 @@ from flask_login import current_user, login_user, logout_user, login_required
 import sqlalchemy as sa
 from app import db
 from app.modeles import Utilisateur
-from app.forms import FormulaireSession, FormulaireInscription
+from app.forms import FormulaireSession, FormulaireInscription, EditProfileForm
 from urllib.parse import urlsplit
+from datetime import datetime, timezone
+
+
+@app.before_request
+def before_request():
+    if current_user.is_authenticated:
+        current_user.apercu = datetime.now(timezone.utc)
+        db.session.commit()
 
 
 @app.route('/')
@@ -31,7 +39,8 @@ def ouvrir_session():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     formulaire = FormulaireSession()
-    print(dir(formulaire))  # This will list all attributes and methods of the form
+    # This will list all attributes and methods of the form
+    print(dir(formulaire))
 
     if formulaire.validate_on_submit():
         utilisateur = db.session.scalar(
@@ -52,16 +61,46 @@ def deconnexion():
     logout_user()
     return redirect(url_for('index'))
 
+
 @app.route('/inscription', methods=['GET', 'POST'])
 def inscription():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     formulaire = FormulaireInscription()
     if formulaire.validate_on_submit():
-        utilisateur = Utilisateur(nom=formulaire.nom.data, courriel=formulaire.courriel.data)
+        utilisateur = Utilisateur(
+            nom=formulaire.nom.data, courriel=formulaire.courriel.data)
         utilisateur.encode_mot_passe(formulaire.mot_passe.data)
         db.session.add(utilisateur)
         db.session.commit()
         flash('Vous êtes maintenant enregistré')
         return redirect(url_for('ouvrir_session'))
     return render_template('inscrire.html', title='Inscription', form=formulaire)
+
+
+@app.route('/utilisateurs/<nom_utilisateur>')
+@login_required
+def utilisateur(nom_utilisateur):
+    utilisateur = db.first_or_404(
+        sa.select(Utilisateur).where(Utilisateur.nom == nom_utilisateur))
+    publications = [
+        {'auteur': utilisateur, 'contenu': 'Test #1'},
+        {'auteur': utilisateur, 'contenu': 'Test #2'}
+    ]
+    return render_template('profile.html', utilisateur=utilisateur, publications=publications)
+
+
+@app.route('/editer_profile', methods=['GET', 'POST'])
+@login_required
+def editer_profile():
+    form = EditProfileForm()
+    if form.validate_on_submit():
+        current_user.nom = form.nom.data
+        current_user.apropos = form.apropos.data
+        db.session.commit()
+        flash("Vos changements ont été sauvegardés")
+        return redirect(url_for('editer_profile'))
+    elif request.method == 'GET':
+        form.nom.data = current_user.nom
+        form.apropos.data = current_user.apropos
+    return render_template('editer_profile.html', titre="Editer profile", form=form)

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if user == current_user %}
+<p><a href="{{ url_for('editer_profile') }}">Editer votre profile</a></p>
+{% endif %}
+
+<table>
+  <tr valign="top">
+    <td><img src="{{ utilisateur.avatar(128) }}"></td>
+    <td>
+      <h1>Utilisateur: {{ utilisateur.nom }}</h1>
+      {% if utilisateur.apropos %}
+      <p>{{ utilisateur.apropos }}</p>
+      {% endif %}
+      {% if utilisateur.apercu %}
+      <p>{{utilisateur.apercu}}</p>
+      {% endif %}
+    </td>
+  </tr>
+</table>
+<hr>
+{% for publication in publications %}
+{% include '_publication.html' %}
+{% endfor %}
+{% endblock %}

@@ -1,4 +1,5 @@
 from typing import Optional
+from hashlib import md5
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timezone
 import sqlalchemy as sa
@@ -18,6 +19,9 @@ class Utilisateur(UserMixin, db.Model):
                                                 unique=True)
     mot_passe_hash: so.Mapped[Optional[str]] = so.mapped_column(sa.String(256))
 
+    apropos: so.Mapped[Optional[str]] = so.mapped_column(sa.String(140))
+    apercu: so.Mapped[Optional[datetime]] = so.mapped_column(default=lambda: datetime.noew(timezone.utc))
+
     publications: so.WriteOnlyMapped['Publication'] = so.relationship(
         back_populates='auteur')
 
@@ -29,6 +33,10 @@ class Utilisateur(UserMixin, db.Model):
 
     def valide_mot_passe(self, mot_passe):
         return check_password_hash(self.mot_passe_hash, mot_passe)
+    
+    def avatar(self, taille):
+        digest = md5(self.courriel.lower().encode('utf-8')).hexdigest()
+        return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={taille}'
 
 class Publication(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
