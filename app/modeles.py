@@ -20,7 +20,7 @@ class Utilisateur(UserMixin, db.Model):
     mot_passe_hash: so.Mapped[Optional[str]] = so.mapped_column(sa.String(256))
 
     apropos: so.Mapped[Optional[str]] = so.mapped_column(sa.String(140))
-    apercu: so.Mapped[Optional[datetime]] = so.mapped_column(default=lambda: datetime.noew(timezone.utc))
+    apercu: so.Mapped[Optional[datetime]] = so.mapped_column(default=lambda: datetime.now(timezone.utc))
 
     publications: so.WriteOnlyMapped['Publication'] = so.relationship(
         back_populates='auteur')

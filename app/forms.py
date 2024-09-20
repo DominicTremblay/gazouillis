@@ -39,7 +39,20 @@ class FormulaireInscription(FlaskForm):
             raise ValidationError(
                 'Veuillez utiliser une autre adresse courriel')
 
+
 class EditProfileForm(FlaskForm):
     nom = StringField("Nom d'utilisateur", validators=[DataRequired()])
     apropos = TextAreaField('A Propos', validators=[Length(min=0, max=140)])
     submit = SubmitField('Soumettre')
+
+    def __init__(self, nom_origine, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.nom_origine = nom_origine
+
+    def validate_username(self, nom):
+        if nom.data != self.nom_origine:
+            utilisateur = db.session.scalar(sa.select(Utilisateur).where(
+                Utilisateur.nom == nom.data))
+            if utilisateur is not None:
+                raise ValidationError(
+                    "Veuillez utiliser un differend nom d'utilisateur")

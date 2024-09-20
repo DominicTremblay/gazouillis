@@ -93,7 +93,7 @@ def utilisateur(nom_utilisateur):
 @app.route('/editer_profile', methods=['GET', 'POST'])
 @login_required
 def editer_profile():
-    form = EditProfileForm()
+    form = EditProfileForm(current_user.nom)
     if form.validate_on_submit():
         current_user.nom = form.nom.data
         current_user.apropos = form.apropos.data
