@@ -2,12 +2,13 @@
 
 {% block content %}
     <h1>Ouvrez une session</h1>
+    <p>Nouvel Utilisateur? <a href="{{ url_for('inscription') }}">Cliquez pour vous inscrire</a></p>
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
         <p>
-            {{ form.utilisateur.label }}<br>
-            {{ form.utilisateur(size=32) }}
-            {% for erreur in form.utilisateur.errors %}
+            {{ form.nom.label }}<br>
+            {{ form.nom(size=32) }}
+            {% for erreur in form.nom.errors %}
             <span style="color: red;">[{{ erreur }}]</span>
             {% endfor %}
         </p>

@@ -22,7 +22,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('nom', sa.String(length=64), nullable=False),
     sa.Column('courriel', sa.String(length=120), nullable=False),
-    sa.Column('mot_pass_hash', sa.String(length=256), nullable=True),
+    sa.Column('mot_passe_hash', sa.String(length=256), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     with op.batch_alter_table('utilisateur', schema=None) as batch_op:

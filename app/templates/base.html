@@ -12,7 +12,11 @@
   <div>
     gazouillis:
     <a href="{{ url_for('index') }}">Accueil</a>
+    {% if current_user.is_anonymous %}
     <a href="{{ url_for('ouvrir_session') }}">Ouvrir session</a>
+    {% else %}
+    <a href="{{ url_for('deconnexion')}}">Déconnexion</a>
+    {% endif %}
   </div>
   <hr>
   {% with messages = get_flashed_messages() %}

@@ -1,30 +1,67 @@
 from app import app
-from flask import render_template, flash, redirect, url_for
-from app.forms import FormulaireSession
+from flask import render_template, flash, redirect, url_for, request
+from flask_login import current_user, login_user, logout_user, login_required
+import sqlalchemy as sa
+from app import db
+from app.modeles import Utilisateur
+from app.forms import FormulaireSession, FormulaireInscription
+from urllib.parse import urlsplit
 
 
 @app.route('/')
 @app.route('/index')
+@login_required
 def index():
-    user = {'username': 'Miguel'}
-    posts = [
+    publications = [
         {
-            'author': {'username': 'John'},
-            'body': 'Beautiful day in Portland!'
+            'auteur': {'utilisateur': 'John'},
+            'contenu': 'Beautiful day in Portland!'
         },
         {
-            'author': {'username': 'Susan'},
-            'body': 'The Avengers movie was so cool!'
+            'auteur': {'utilisateur': 'Susan'},
+            'contenu': 'The Avengers movie was so cool!'
         }
     ]
-    return render_template('index.html', titre='Home', user=user, posts=posts)
+    return render_template('index.html', titre='Home', publications=publications)
 
 
 @app.route('/session', methods=['GET', 'POST'])
 def ouvrir_session():
-    form = FormulaireSession()
-    if form.validate_on_submit():
-        flash('Ouverture de session demander par {}, memoriser={}'.format(
-            form.utilisateur.data, form.memoriser.data))
+
+    if current_user.is_authenticated:
         return redirect(url_for('index'))
-    return render_template('session.html', title='Ouverture Session', form=form)
+    formulaire = FormulaireSession()
+    print(dir(formulaire))  # This will list all attributes and methods of the form
+
+    if formulaire.validate_on_submit():
+        utilisateur = db.session.scalar(
+            sa.select(Utilisateur).where(Utilisateur.nom == formulaire.nom.data))
+        if utilisateur is None or not utilisateur.valide_mot_passe(formulaire.mot_passe.data):
+            flash('Utilisateur ou mot de passe invalide')
+            return redirect(url_for('ouvrir_session'))
+        login_user(utilisateur, remember=formulaire.memoriser.data)
+        page_suivante = request.args.get('next')
+        if not page_suivante or urlsplit(page_suivante).netloc != '':
+            page_suivante = url_for('index')
+        return redirect(page_suivante)
+    return render_template('session.html', titre='Ouverture Session', form=formulaire)
+
+
+@app.route('/deconnexion')
+def deconnexion():
+    logout_user()
+    return redirect(url_for('index'))
+
+@app.route('/inscription', methods=['GET', 'POST'])
+def inscription():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    formulaire = FormulaireInscription()
+    if formulaire.validate_on_submit():
+        utilisateur = Utilisateur(nom=formulaire.nom.data, courriel=formulaire.courriel.data)
+        utilisateur.encode_mot_passe(formulaire.mot_passe.data)
+        db.session.add(utilisateur)
+        db.session.commit()
+        flash('Vous êtes maintenant enregistré')
+        return redirect(url_for('ouvrir_session'))
+    return render_template('inscrire.html', title='Inscription', form=formulaire)
