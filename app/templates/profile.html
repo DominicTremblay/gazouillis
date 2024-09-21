@@ -1,10 +1,26 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% if user == current_user %}
-<p><a href="{{ url_for('editer_profile') }}">Editer votre profile</a></p>
-{% endif %}
+{% print(utilisateur) %}
+{% print current_user %}
+{% if utilisateur == current_user %}
 
+<p><a href="{{ url_for('editer_profile') }}">Editer votre profile</a></p>
+{% elif not current_user.est_fan(utilisateur) %}
+<p>
+<form action="{{ url_for('suivre', nom_utilisateur=utilisateur.nom) }}" method="post">
+  {{ form.hidden_tag() }}
+  {{ form.submit(value='Suivre') }}
+</form>
+</p>
+{% else %}
+<p>
+<form action="{{ url_for('desabonner', nom_utilisateur=utilisateur.nom) }}" method="post">
+  {{ form.hidden_tag() }}
+  {{ form.submit(value='Desabonner') }}
+</form>
+</p>
+{% endif %}
 <table>
   <tr valign="top">
     <td><img src="{{ utilisateur.avatar(128) }}"></td>
@@ -16,6 +32,8 @@
       {% if utilisateur.apercu %}
       <p>{{utilisateur.apercu}}</p>
       {% endif %}
+      <p>{{ utilisateur.nombre_abonnes() }} abonnes qui vous suivent, {{ utilisateur.nombre_abonnements() }} personnes
+        que vous suivez.</p>
     </td>
   </tr>
 </table>

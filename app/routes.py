@@ -4,7 +4,7 @@ from flask_login import current_user, login_user, logout_user, login_required
 import sqlalchemy as sa
 from app import db
 from app.modeles import Utilisateur
-from app.forms import FormulaireSession, FormulaireInscription, EditProfileForm
+from app.forms import FormulaireSession, FormulaireInscription, EditProfileForm, FormulaireVide
 from urllib.parse import urlsplit
 from datetime import datetime, timezone
 
@@ -87,7 +87,8 @@ def utilisateur(nom_utilisateur):
         {'auteur': utilisateur, 'contenu': 'Test #1'},
         {'auteur': utilisateur, 'contenu': 'Test #2'}
     ]
-    return render_template('profile.html', utilisateur=utilisateur, publications=publications)
+    form = FormulaireVide()
+    return render_template('profile.html', utilisateur=utilisateur, publications=publications, form=form)
 
 
 @app.route('/editer_profile', methods=['GET', 'POST'])
@@ -104,3 +105,45 @@ def editer_profile():
         form.nom.data = current_user.nom
         form.apropos.data = current_user.apropos
     return render_template('editer_profile.html', titre="Editer profile", form=form)
+
+
+@app.route('/suivre/<nom_utilisateur>', methods=['POST'])
+@login_required
+def suivre(nom_utilisateur):
+    form = FormulaireVide()
+    if form.validate_on_submit():
+        utilisateur = db.session.scalar(
+            sa.select(Utilisateur).where(Utilisateur.nom == nom_utilisateur))
+        if utilisateur is None:
+            flash(f'Utilisateur {nom_utilisateur} introuvable.')
+            return redirect(url_for('index'))
+        if utilisateur == current_user:
+            flash('Vous ne pouvez suivre vous memes')
+            return redirect(url_for('utilisateur', nom_utilisateur=nom_utilisateur))
+        current_user.suivre(utilisateur)
+        db.session.commit()
+        flash(f'Vous suivez {nom_utilisateur}!')
+        return redirect(url_for('utilisateur', nom_utilisateur=nom_utilisateur))
+    else:
+        return redirect(url_for('index'))
+
+
+@app.route('/desabonner/<nom_utilisateur>', methods=['POST'])
+@login_required
+def desabonner(nom_utilisateur):
+    form = FormulaireVide()
+    if form.validate_on_submit():
+        utilisateur = db.session.scalar(
+            sa.select(Utilisateur).where(Utilisateur.nom == nom_utilisateur))
+        if utilisateur is None:
+            flash(f'Utilisateur {nom_utilisateur} introuvable.')
+            return redirect(url_for('index'))
+        if utilisateur == current_user:
+            flash('Vous ne pouvez vous desabonner de vous memes')
+            return redirect(url_for('user', nom_utilisateur=nom_utilisateur))
+        current_user.desabonner(utilisateur)
+        db.session.commit()
+        flash(f'Vous suivez plus {nom_utilisateur}!')
+        return redirect(url_for('utilisateur', nom_utilisateur=nom_utilisateur))
+    else:
+        return redirect(url_for('index'))
