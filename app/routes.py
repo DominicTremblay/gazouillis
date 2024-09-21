@@ -3,8 +3,8 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_user, logout_user, login_required
 import sqlalchemy as sa
 from app import db
-from app.modeles import Utilisateur
-from app.forms import FormulaireSession, FormulaireInscription, EditProfileForm, FormulaireVide
+from app.modeles import Utilisateur, Publication
+from app.forms import FormulaireSession, FormulaireInscription, EditProfileForm, FormulaireVide, FormulairePublication
 from urllib.parse import urlsplit
 from datetime import datetime, timezone
 
@@ -16,21 +16,63 @@ def before_request():
         db.session.commit()
 
 
-@app.route('/')
-@app.route('/index')
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
-    publications = [
-        {
-            'auteur': {'utilisateur': 'John'},
-            'contenu': 'Beautiful day in Portland!'
-        },
-        {
-            'auteur': {'utilisateur': 'Susan'},
-            'contenu': 'The Avengers movie was so cool!'
-        }
-    ]
-    return render_template('index.html', titre='Home', publications=publications)
+    page = request.args.get('page', 1, type=int)
+    requete = current_user.publications_abonnements()
+
+    publications = db.paginate(
+        requete, page=page,
+        per_page=app.config['PUBLICATIONS_PAR_PAGE'],
+        error_out=False)
+
+    url_suivant = url_for(
+        'index', page=publications.next_num) if publications.has_next else None
+
+    url_precedent = url_for(
+        'index', page=publications.prev_num) if publications.has_prev else None
+
+    formulaire = FormulairePublication()
+    if formulaire.validate_on_submit():
+        publication = Publication(
+            contenu=formulaire.publication.data, auteur=current_user)
+        db.session.add(publication)
+        db.session.commit()
+        flash('Votre publication est maintenant publiée')
+        return redirect(url_for('index'))
+
+    return render_template('index.html',
+                           titre='Home',
+                           publications=publications.items,
+                           formulaire=formulaire,
+                           url_suivant=url_suivant,
+                           url_precedent=url_precedent)
+
+
+@app.route('/explorer')
+@login_required
+def explorer():
+    page = request.args.get('page', 1, type=int)
+    requete = sa.select(Publication).order_by(Publication.horodatage.desc())
+
+    publications = db.paginate(
+        requete, page=page,
+        per_page=app.config['PUBLICATIONS_PAR_PAGE'],
+        error_out=False)
+
+    url_suivant = url_for(
+        'explorer', page=publications.next_num) if publications.has_next else None
+
+    url_precedent = url_for(
+        'explorer', page=publications.prev_num) if publications.has_prev else None
+
+    return render_template('index.html',
+                           titre='Explorer',
+                           publications=publications.items,
+                           url_suivant=url_suivant,
+                           url_precedent=url_precedent)
 
 
 @app.route('/session', methods=['GET', 'POST'])
@@ -81,14 +123,31 @@ def inscription():
 @app.route('/utilisateurs/<nom_utilisateur>')
 @login_required
 def utilisateur(nom_utilisateur):
-    utilisateur = db.first_or_404(
-        sa.select(Utilisateur).where(Utilisateur.nom == nom_utilisateur))
-    publications = [
-        {'auteur': utilisateur, 'contenu': 'Test #1'},
-        {'auteur': utilisateur, 'contenu': 'Test #2'}
-    ]
+    page = request.args.get('page', 1, type=int)
+    requete_utilisateur = sa.select(Utilisateur).where(
+        Utilisateur.nom == nom_utilisateur)
+    utilisateur = db.session.scalars(requete_utilisateur).first()
+
+    requete_publications = utilisateur.publications.select().order_by(Publication.horodatage.desc())
+
+    publications = db.paginate(
+        requete_publications, page=page,
+        per_page=app.config['PUBLICATIONS_PAR_PAGE'],
+        error_out=False)
+
+    url_suivant = url_for(
+        'utilisateur', nom_utilisateur=utilisateur.nom, page=publications.next_num) if publications.has_next else None
+
+    url_precedent = url_for(
+        'utilisateur', nom_utilisateur=utilisateur.nom, page=publications.prev_num) if publications.has_prev else None
+
     form = FormulaireVide()
-    return render_template('profile.html', utilisateur=utilisateur, publications=publications, form=form)
+    return render_template('profile.html',
+                           utilisateur=utilisateur,
+                           publications=publications,
+                           form=form,
+                           url_suivant=url_suivant,
+                           url_precedent=url_precedent)
 
 
 @app.route('/editer_profile', methods=['GET', 'POST'])

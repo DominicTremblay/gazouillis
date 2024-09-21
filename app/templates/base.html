@@ -12,6 +12,7 @@
   <div>
     gazouillis:
     <a href="{{ url_for('index') }}">Accueil</a>
+    <a href="{{ url_for('explorer') }}">Explorer</a>
     {% if current_user.is_anonymous %}
     <a href="{{ url_for('ouvrir_session') }}">Ouvrir session</a>
     {% else %}

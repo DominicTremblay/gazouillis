@@ -1,8 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% print(utilisateur) %}
-{% print current_user %}
 {% if utilisateur == current_user %}
 
 <p><a href="{{ url_for('editer_profile') }}">Editer votre profile</a></p>
@@ -41,4 +39,10 @@
 {% for publication in publications %}
 {% include '_publication.html' %}
 {% endfor %}
+{% if url_precedent %}
+<a href="{{ url_precedent }}">Precedent</a>
+{% endif %}
+{% if url_suivant %}
+<a href="{{ url_suivant }}">Suivant</a>
+{% endif %}
 {% endblock %}

@@ -55,8 +55,14 @@ class EditProfileForm(FlaskForm):
                 Utilisateur.nom == nom.data))
             if utilisateur is not None:
                 raise ValidationError(
-                    "Veuillez utiliser un differend nom d'utilisateur")
+                    "Veuillez utiliser un nom d'utilisateur differend")
+
 
 class FormulaireVide(FlaskForm):
     submit = SubmitField('Soumettre')
 
+
+class FormulairePublication(FlaskForm):
+    publication = TextAreaField('Dites quelquechose', validators=[
+        DataRequired(), Length(min=1, max=140)])
+    submit = SubmitField('Soumettre')

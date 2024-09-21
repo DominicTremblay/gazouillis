@@ -1,8 +1,29 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Hi, {{ current_user.nom }}!</h1>
-    {% for publication in publications %}
-    <div><p>{{ publication.auteur.nom }} says: <b>{{ publication.contenu }}</b></p></div>
-    {% endfor %}
+<h1>Hi, {{ current_user.nom }}!</h1>
+{% if formulaire %}
+<form action="" method="post">
+    {{ formulaire.hidden_tag() }}
+    <p>
+        {{ formulaire.publication.label }}<br>
+        {{ formulaire.publication(cols=32, rows=4) }}<br>
+        {% for error in formulaire.publication.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>{{ formulaire.submit() }}</p>
+</form>
+{% endif %}
+{% for publication in publications %}
+<div>
+    {% include '_publication.html' %}
+</div>
+{% endfor %}
+{% if url_precedent %}
+<a href="{{url_precedent}}">Précédent</a>
+{% endif %}
+{% if url_suivant %}
+<a href="{{url_suivant}}">Suivant</a>
+{% endif %}
 {% endblock %}

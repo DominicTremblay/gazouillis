@@ -1,6 +1,6 @@
 <table>
   <tr valign="top">
       <td><img src="{{ publication.auteur.avatar(36) }}"></td>
-      <td>{{ publication.auteur.nom }} dit:<br>{{ publication.contenu }}</td>
+      <td><a href="{{url_for('utilisateur', nom_utilisateur=publication.auteur.nom)}}">{{ publication.auteur.nom }}</a> dit:<br>{{ publication.contenu }}</td>
   </tr>
 </table>
