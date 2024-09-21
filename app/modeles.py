@@ -90,29 +90,47 @@ class Utilisateur(UserMixin, db.Model):
     def nombre_abonnements(self):
         return self.abonnements.count()
 
+    # Retrouver les publications des utilisateurs que l'utilisateur courant suit
     def publications_abonnements(self):
         Auteur = so.aliased(Utilisateur)
+        Abonne = so.aliased(Utilisateur)
+
         return (
             sa.select(Publication)
+            # Join on the author of the publication
             .join(Publication.auteur.of_type(Auteur))
-            .join(Auteur.abonnes)  # Join on 'abonnes' to get followers
-            # Assuming the current user is the one who is following others
-            .where(Auteur.id == self.id)
-            # Changed 'timestamp' to 'horodatage'
+            # Only include posts from users this user follows
+            .where(Abonne.id == self.id)
+            # Order by timestamp in descending order
             .order_by(Publication.horodatage.desc())
         )
 
+        # return (
+        #     sa.select(Publication)
+        #     .join(Publication.auteur.of_type(Auteur))
+        #     .join(Auteur.abonnes)  # Join on 'abonnes' to get followers
+        #     # Assuming the current user is the one who is following others
+        #     .where(Auteur.id == self.id)
+        #     # Changed 'timestamp' to 'horodatage'
+        #     .order_by(Publication.horodatage.desc())
+        # )
+
+    # Retrouver les publications des utilisateurs qui suivent l'utilisateur courant
     def publications_abonnes(self):
         Auteur = so.aliased(Utilisateur)
         Abonne = so.aliased(Utilisateur)
-        
+
         return (
             sa.select(Publication)
-            .join(Publication.auteur.of_type(Auteur))  # Join on the author of the publication
+            # Join on the author of the publication
+            .join(Publication.auteur.of_type(Auteur))
             .join(Auteur.abonnes.of_type(Abonne))  # Join on the followers
-            .where(Abonne.id == self.id)  # Only include posts from users this user follows
-            .where(Publication.user_id != self.id)  # Exclude the current user's own posts
-            .order_by(Publication.horodatage.desc())  # Order by timestamp in descending order
+            # Only include posts from users this user follows
+            .where(Abonne.id == self.id)
+            # Exclude the current user's own posts
+            .where(Publication.user_id != self.id)
+            # Order by timestamp in descending order
+            .order_by(Publication.horodatage.desc())
         )
 
 
