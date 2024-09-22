@@ -20,7 +20,7 @@ class UserSeeder(Seeder):
     def lire_fichier_csv(self,  nom_fichier):
         acces_fichier = os.path.abspath(os.path.join(
             os.path.dirname(__file__), '..', nom_fichier))
-        print(acces_fichier)
+       
         """Lit un fichier CSV et retourne une liste de dictionnaires."""
         data = []
         with open(acces_fichier, newline='', encoding='utf-8') as fichier:
@@ -34,7 +34,6 @@ class UserSeeder(Seeder):
         # utilisateurs = []
         for rangee in donnees_utilisateurs:
             mot_passe_hash = generate_password_hash(rangee[2].strip())
-            print("rangee[2]", rangee[2], len(rangee[2].strip()))
             utilisateur = Utilisateur(
                 nom=rangee[0],
                 courriel=rangee[1],

@@ -1,5 +1,6 @@
+import os
 from typing import Optional
-from hashlib import md5
+import base64
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timezone
 import sqlalchemy as sa
@@ -29,6 +30,7 @@ class Utilisateur(UserMixin, db.Model):
                                            unique=True)
     courriel: so.Mapped[str] = so.mapped_column(sa.String(120), index=True,
                                                 unique=True)
+    avatar: so.Mapped[str] = so.mapped_column(sa.String(140))
     mot_passe_hash: so.Mapped[Optional[str]] = so.mapped_column(sa.String(256))
 
     apropos: so.Mapped[Optional[str]] = so.mapped_column(sa.String(140))
@@ -68,8 +70,11 @@ class Utilisateur(UserMixin, db.Model):
         return check_password_hash(self.mot_passe_hash, mot_passe)
 
     def avatar(self, taille):
-        digest = md5(self.courriel.lower().encode('utf-8')).hexdigest()
-        return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={taille}'
+        access_fichier_base64 = f'app/static/images/{self.nom.capitalize()}.base64'
+        print(access_fichier_base64)
+        with open(access_fichier_base64, 'r') as f:
+            encodage_base64 = f.read()
+        return encodage_base64
 
     def suivre(self, utilisateur):
         if not self.est_fan(utilisateur):
