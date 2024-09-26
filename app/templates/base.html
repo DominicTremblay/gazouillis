@@ -1,26 +1,44 @@
-<html>
+{%- extends "bootstrap/base.html" %}
 
-<head>
+{% block styles -%}
+    {{super()}}  {# Super() est necessaire pour aussi avoir les styles de Bootstrap #}
+    <link rel="stylesheet" type="text/css"
+          href="{{url_for('static', filename='css/styles.css')}}">
+{% endblock %}
+
+{% block title %}
+
   {% if titre %}
   <title>{{ titre }} - gazouillis</title>
   {% else %}
   <title>gazouillis</title>
   {% endif %}
-</head>
 
-<body>
-  <div>
-    gazouillis:
-    <a href="{{ url_for('index') }}">Accueil</a>
-    <a href="{{ url_for('explorer') }}">Explorer</a>
-    {% if current_user.is_anonymous %}
-    <a href="{{ url_for('ouvrir_session') }}">Ouvrir session</a>
-    {% else %}
-    <a href="{{ url_for('utilisateur', nom_utilisateur=current_user.nom)}}">Profile</a>
-    <a href="{{ url_for('deconnexion')}}">Déconnexion</a>
-    {% endif %}
+{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+
+      <a class="navbar-brand" href="{{ url_for('index') }}">Accueil</a>
+      <a class="navbar-brand" href="{{ url_for('explorer') }}">Explorer</a>
+      {% if current_user.is_anonymous %}
+      <a class="navbar-brand" href="{{ url_for('ouvrir_session') }}">Ouvrir session</a>
+      {% else %}
+      <a class="navbar-brand" href="{{ url_for('utilisateur', nom_utilisateur=current_user.nom)}}">Profile</a>
+      <a class="navbar-brand" href="{{ url_for('deconnexion')}}">Déconnexion</a>
+      {% endif %}
+
+
+    </div>
   </div>
-  <hr>
+</nav>
+{% endblock %}
+
+{% block content %}
+<section class="container">
+
   {% with messages = get_flashed_messages() %}
   {% if messages %}
   <ul>
@@ -30,7 +48,6 @@
   </ul>
   {% endif %}
   {% endwith %}
-  {% block content %}{% endblock %}
-</body>
-
-</html>
+  {% block app_content %}{% endblock %}
+</section>
+{% endblock %}

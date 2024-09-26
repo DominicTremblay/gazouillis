@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block content %}
+{% block app_content %}
 {% if utilisateur == current_user %}
 
 <p><a href="{{ url_for('editer_profile') }}">Editer votre profile</a></p>

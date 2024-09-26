@@ -1,6 +1,7 @@
-<table>
-  <tr valign="top">
-      <td><img src="{{ publication.auteur.avatar(36) }}"></td>
-      <td><a href="{{url_for('utilisateur', nom_utilisateur=publication.auteur.nom)}}">{{ publication.auteur.nom }}</a> dit:<br>{{ publication.contenu }}</td>
-  </tr>
-</table>
+<div class="card" style="width: 18rem;"></div>
+<img class="card-img-top" src="{{ publication.auteur.avatar(36) }}">
+  <div class="card-body">
+    <h5 class="card-title"><a href="{{url_for('utilisateur', nom_utilisateur=publication.auteur.nom)}}">{{ publication.auteur.nom }}</a> dit:</h5>
+    <p class="card-text">{{ publication.contenu }}</p>
+  </div>
+</div>

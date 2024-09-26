@@ -1,0 +1,36 @@
+<html>
+
+<head>
+  {% if titre %}
+  <title>{{ titre }} - gazouillis</title>
+  {% else %}
+  <title>gazouillis</title>
+  {% endif %}
+</head>
+
+<body>
+  <div>
+    gazouillis:
+    <a href="{{ url_for('index') }}">Accueil</a>
+    <a href="{{ url_for('explorer') }}">Explorer</a>
+    {% if current_user.is_anonymous %}
+    <a href="{{ url_for('ouvrir_session') }}">Ouvrir session</a>
+    {% else %}
+    <a href="{{ url_for('utilisateur', nom_utilisateur=current_user.nom)}}">Profile</a>
+    <a href="{{ url_for('deconnexion')}}">Déconnexion</a>
+    {% endif %}
+  </div>
+  <hr>
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+  <ul>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</body>
+
+</html>

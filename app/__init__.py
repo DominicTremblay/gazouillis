@@ -1,4 +1,5 @@
 from flask import Flask, flash, redirect, url_for
+from flask_bootstrap import Bootstrap
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -6,6 +7,7 @@ from flask_login import LoginManager
 from flask_seeder import FlaskSeeder
 
 app = Flask(__name__, instance_relative_config=True)
+Bootstrap(app)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
